@@ -8,10 +8,10 @@ We will compare ASP.NET and Node.js for backend programming.
 - [What is ASP.NET?](#what-is-aspnet)
 - [Processing Models](#processing-models)
 - [Programming Languages](#programming-languages)
-- [Support for Asynchronous Programming](#support-for-asynchronous-programming)
--- [Examples: if-else Flow for Authentication Middleware](#examples-if-else-flow-for-authentication-middleware)
+- [Support for Asynchronous Programming](#support-for-asynchronous-programming)  
+-- [Examples: if-else Flow for Authentication Middleware](#examples-if-else-flow-for-authentication-middleware)  
 -- [Examples: Asynchronous Calls to HackerNews JSON API](#examples-asynchronous-calls-to-hackernews-json-api)
-- [Simplicity](#simplicity)
+- [Simplicity](#simplicity)  
 -- Examples: Hello World
 - [Abstractions and Conventions](#abstractions-and-conventions) <small>(ASP.NET MVC 5)</small>
 - [Performance](#performance) <small>(ASP.NET MVC 4/Web API)</small>
