@@ -82,7 +82,8 @@ As shown Node.js uses one thread for handling requests and many threads to provi
 The diagram above shows multi threaded server that may be found, e.g., in Java.
 In this model the server spawns new thread for handling each request which sleeps on blocking IO operations consuming CPU and memory resources.
 
-So how exactly does ASP.NET work? ASP.NET doesn't use one thread but instead uses restricted number of threads from the pool and queues requests to it. Threads may be terminated on asynchronous operations like in Node.js. However, ASP.NET processing model is more prone to context switching which implies additional CPU costs. More than that as ASP.NET and .NET were not designed with asynchronous programming in mind some libraries may still offer no support for it or offer "fake asynchrony", this makes .NET freedom of async choice quite restricted.
+So how exactly does ASP.NET work?  
+ASP.NET doesn't use one thread but instead uses restricted number of threads from the pool and queues requests to it. Threads may be terminated on asynchronous operations like in Node.js. However, ASP.NET processing model is more prone to context switching which implies additional CPU costs. More than that as ASP.NET and .NET were not designed with asynchronous programming in mind some libraries may still offer no support for it or offer "fake asynchrony", this makes .NET freedom of async choice quite restricted.
 
 Sources:  
 [What Makes Node.js Faster Than Java?](https://strongloop.com/strongblog/node-js-is-faster-than-java/)  
@@ -322,6 +323,81 @@ namespace HelloWeb
   }
 }
 ```
+Now the same trick but with ASP.NET 4.5 and Katana.  
+Project structure:
+```sh
+.
+├── HelloWorld.csproj
+├── HelloWorld.csproj.user
+├── HelloWorld.sln
+├── packages.config
+├── Properties
+│   └── AssemblyInfo.cs
+├── Startup.cs
+└── Web.config
+```
+This time all development is done in the latest Visual Studio which runs `nuget restore`, builds project and deploys it on IIS.  
+The code:
+```csharp
+// Startup.cs, 56 lines
+using Owin;
+using Microsoft.Owin.Logging;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System;
+
+namespace HelloWorld
+{
+  public class Startup
+  {
+    private ILogger logger;
+
+    // Invoked once at startup to configure your application.
+    public void Configuration(IAppBuilder app)
+    {
+      this.logger = app.CreateLogger(this.GetType().Name);
+      app.Run(async (context) => {
+        logger.WriteInformation("Configuring...");
+
+        var path = context.Request.Path;
+        logger.WriteInformation("Has request for " + path + "!");
+        if (!path.Value.Equals("/"))
+            return;
+        logger.WriteInformation("Ok, processing request...");
+
+        using (var client = new HttpClient())
+        {
+          client.BaseAddress = new Uri("https://hacker-news.firebaseio.com");
+          client.DefaultRequestHeaders.Accept.Clear();
+          client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+          HttpResponseMessage response = await client.GetAsync("/v0/topstories.json?print=pretty");
+          logger.WriteInformation("Got first response.");
+          if (response.IsSuccessStatusCode)
+          {
+            var arr = await response.Content.ReadAsAsync<dynamic>();
+            var responseId = (String)arr[0];
+            var itemUrl = String.Format("/v0/item/{0}.json?print=pretty", responseId);
+            response = await client.GetAsync(itemUrl);
+            logger.WriteInformation("Got second response.");
+            if (response.IsSuccessStatusCode)
+            {
+              var dict = await response.Content.ReadAsAsync<dynamic>();
+              var title = (String)dict["title"];
+              logger.WriteInformation(title);
+              await context.Response.WriteAsync(title);
+              return;
+            }
+          }
+          logger.WriteInformation("Error:" + await response.Content.ReadAsStringAsync());
+          await context.Response.WriteAsync("Service is not available!");
+        }
+      });
+    }
+  }
+}
+```
+
 Corresponding bare bone Node.js server script:
 ```javascript
 // server.js
@@ -439,7 +515,7 @@ console.log('Server running at http://localhost:'+port);
 
 ### Simplicity
 
-To assess simplicity let's consider hello world examples of Node.js and ASP.NET vNext.  
+To assess simplicity let's consider hello world examples of Node.js, ASP.NET 5 Beta and ASP.NET 4.5 with Katana.  
 
 Node.js project file structure:
 ```sh
@@ -518,11 +594,53 @@ namespace HelloWeb
 
 Commands I've used to run HelloWeb sample.
 ```sh
-cd HelloWeb
+cd hn-api-asp.net-vnext
 dnvm upgrade -u
 dnu restore
 dnx . web
 ```
+Finally let's dive into ASP.NET 4.5 with Katana.  
+Project structure:
+```sh
+.
+├── HelloWorld.csproj
+├── HelloWorld.sln
+├── packages.config
+├── Properties
+│   └── AssemblyInfo.cs
+├── Startup.cs
+└── Web.config
+```
+Code:
+```csharp
+// Startup.cs
+using Owin;
+using Microsoft.Owin;
+using System.Threading.Tasks;
+
+namespace HelloWorld
+{
+  public class Startup
+  {
+    // Invoked once at startup to configure your application.
+    public void Configuration(IAppBuilder app)
+    {
+      app.Run(Invoke);
+    }
+
+    // Invoked once per request.
+    public Task Invoke(IOwinContext context)
+    {
+      context.Response.ContentType = "text/plain";
+      return context.Response.WriteAsync("Hello World");
+    }
+  }
+}
+```
+For more examples of ASP.NET 4.5 you may consider Web API 2 in `Code/hello-world-asp.net-web-api-2` folder.
+
+
+
 
 ### Abstractions and Conventions
 ##### ASP.NET MVC 5 vs Node.js
@@ -570,23 +688,6 @@ The explanation why asynchronous Node.js is faster than asynchronous ASP.NET may
 Node.js is created for fast request handling without heavy computations. In all tasks requiring heavy computations Node.js will certainly loose to ASP.NET.  
 In cases where Node.js is not clustered it looses to ASP.NET, e.g. [see this](http://stackoverflow.com/a/10641377/521957).
 
-
-### Portability
-
-Except some issues Node.js works great on all major platforms.  
-ASP.NET is ported partially, e.g. MVC4 on Mono lacks support for async features.  
-The forthcoming ASP.NET 5 is expected to cover all major platforms.  
-Definitely, currently Node.js wins in portability.  
-Sources: [Mono Compatibility](http://www.mono-project.com/docs/about-mono/compatibility/).
-
-### Reliability
-
-Reliability is defined by how robust your program to failures in input, runtime exceptions, programming errors, etc.  
-C# is more robust as it offers strict-type system which JavaScript lacks.  
-Things get more complicated when dealing with error handling in asynchronous code. It's more robust to use generators with `yield` wrapped in `try`/`catch` instead of error callbacks in Node.js.  
-Some programmers are not happy with JavaScript being not robust, e.g. [see this](https://medium.com/@tjholowaychuk/farewell-node-js-4ba9e7f3e52b).
-
-
 ### Learnability
 
 Learnability is defined by how easy it is for a newcomer to pick up the language.  
@@ -597,27 +698,147 @@ Being dynamically typed, JavaScript is easier to pick up, but in Node.js to deli
 By ecosystem I mean the availability of third party packages and community support.    
 As Node.js is more portable its community is wider. JavaScript is also more ubiquitous than .NET. Provided with the idea of louse coupling Node.js ecosystem is rich and robust.
 
-### Conclusion
+### Features Check List
+#### Paradigms Support
+| Feature    	| JS/Node.js        | C#/ASP.NET       
+| ------------- |:-----------       |:-----  
+| Type System	| Weakly typed		| Strongly typed
+| Generic		| No, dynamic		| Yes
+| Imperative	| Yes				| Yes  
+| Structured 	| Yes				| Yes  
+| Procedural	| Yes				| Static methods
+| Reflective	| Yes				| Yes
+| OOP			| Prototype-based 	| Classical
+| Functional	| Third party libs	| Partly supported
+| Closures		| Yes				| Yes
+| Lambdas		| Yes, [syntax support](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions) in ES6				| Yes, syntax support
+| Concurrent	| No, clustered, IPC	| Yes
 
-Java outperforms C in overwhelming majority of aspects. But if you have to write high-performance code, e.g., system driver, or independent project then Java is no choice in favor of C.  
-The following table summarizes comparison.
+#### Cost
+
+| Aspect    	    		| JS/Node.js        | C#/ASP.NET       
+| -------------             |:-----------       |:-----  
+| Development Environment	| Free/Paid (WebStorm)			| [Freemium][f] (Visual Studio)
+| Platform					| Linux preferable (Free/Paid)	| Windows preferable (Paid)
+| Hosting					| Free/Paid				| Free/Paid
+| Competent developers		| Available				| Catches up, also see [1]
+| Code maintenance			| more bugs, upgrades	| less bugs, upgrades
+
+My choice may be highly subjective but I believe Node.js is cheaper in general.
+
+> [[1]](http://www.haneycodes.net/to-node-js-or-not-to-node-js/) 2014: Relative to .NET, there aren’t as many Node.js developers in the current tech scene that are capable and competent.
+
+[f]: https://en.wikipedia.org/wiki/Freemium
+
+#### Readability
 
 \+ means "wins"  
-\- means "looses"  
+\-- means "looses"  
 
-| Characterisitc     		| Node.js   | ASP.NET  
-| ----------------				|:------:   |:-------:  
-| IO Performance	   		| +		 | -  
-| Computational Perf.	| -		 | +  
-| Asynchronous Programming | required	 | possible  
-| Languages		       		| JS looses | C# wins  
-| Portability		     		| +		 | -  
-| Reliability		     		| -		 | +  
-| Ecosystem		 	     	| +		 | -  
-| Learnability		   		| +	 	 | -  
-| Simplicity		     		| +	 	 | -  
+| Characteristic    	| JS/Node.js        		| C#/ASP.NET       
+| -------------         |:-----------           |:-----  
+| Easy to abuse			| --					| +
+| Async model			| --, Promises, `yield`	| +, clear `async`/`await`
+| Verbose (not terse)	| --, not always			| +, mostly
+| Abstract 				| +, "close to metal" 	| --
+| Clear project/file structure | + 					| --, only in vNext
+
+In most cases C# wins in readability though its use of abstractions and language features may make your code obscure.
+
+#### Reliability
+
+Reliability is defined by how robust your program to failures in input, runtime exceptions, programming errors, etc.  
+C# is more robust as it offers strict-type system which JavaScript lacks.  
+Things get more complicated when dealing with error handling in asynchronous code. It's more robust to use generators with `yield` wrapped in `try`/`catch` instead of error callbacks in Node.js.  
+Some programmers are not happy with JavaScript being not robust, e.g. [see this](https://medium.com/@tjholowaychuk/farewell-node-js-4ba9e7f3e52b).
+
+#### Generality
+
+Generality of code is defined by whether it may be applied to vast majority of use cases, e.g., different types of inputs.
+
+| Characteristic    			| JS/Node.js        		| C#/ASP.NET       
+| -------------                 |:-----------           |:-----  
+| Variable number of arguments	| Yes					| Yes
+| Function/method overloading	| Not needed, dynamic	| Yes
+| Omitting arguments/defaults	| Yes					| Yes
+| Mixing order of arguments		| Yes					| No, only named
+| Generics						| Not needed, dynamic	| Yes
+| Work with any type			| Yes					| Yes, see `dynamic`
+| Method overriding				| Yes, dynamic			| Yes
+| Monkey patching				| Yes					| No
+| One pattern for async code	|No, rewrite callbacks to Promises| Yes, mostly
+| Everything is ready for async	| Yes					| No
+
+Currently Node.js ecosystem is being split between callback and generator approaches to asynchronous programming making old libraries cumbersome to use but on the other hand ASP.NET is split between synchronous and non-synchronous libraries (which is really not a big problem, in my humble opinion, as most use cases are covered).
+
+#### Portability
+
+Except some issues Node.js works great on all major platforms.  
+ASP.NET is ported partially, e.g. MVC4 on Mono lacks support for async features.  
+The forthcoming ASP.NET 5 is expected to cover all major platforms.  
+Definitely, currently Node.js wins in portability.  
+Sources: [Mono Compatibility](http://www.mono-project.com/docs/about-mono/compatibility/).
+
+#### Orthogonality
+Orthogonality is defined by how many programming concepts and their combinations you have to use to reach your goal.  
+It is related to the language used, to the ecosystem involved and cohesion/coupling.  
+It seems to me Node.js has looser coupling and that's why it wins in orthogonality.
+
+#### Maintainability
+
+> ...maintainability is inversely proportional to the amount of time it takes a developer to make a change and the risk that change will break something.
+
+| Related Characteristic    | JS/Node.js        		| C#/ASP.NET       
+| -------------             |:-----------           |:-----  
+| Readability				| Worse					| Better
+| Reliability				| Worse, weakly typed	| Better, strongly typed
+| Testability				| Easy to mock objects | Not always possible to mock
+
+#### Efficiency
+
+Let's put there are Code Efficiency and Programmer Efficiency.
+> The goal of code efficiency is to reduce resource consumption and completion time as much as possible with minimum risk to the business or operating environment.
+
+So, Code Efficiency is related to performance that is discussed in a [corresponding chapter](#performance).
+
+We will assume that Programmer Efficiency is defined by how easy it is for the programmer to implement some new feature for a project. I believe the crucial ground for efficiency is ecosystem and subjectively Node.js is better here.
+
+#### Memory management
+
+[Node.js](https://github.com/joyent/node/wiki/FAQ):
+> Currently, by default v8 has a memory limit of 512mb on 32-bit systems, and 1gb on 64-bit systems. The limit can be raised by setting --max_old_space_size to a maximum of ~1024 (~1 GiB) (32-bit) and ~1741 (~1.7GiB) (64-bit), but it is recommended that you split your single process into several workers if you are hitting memory limits.
+
+With ASP.NET there are statements that memory management becomes difficult when you reach a 2GB threshold on 64x machine but sources are scarce.
+
+#### Type-Checking
+
+JavaScript is weakly typed dynamic language and type checks may be implemented during runtime. C# is a strongly typed language with support for dynamic objects making it competitive with dynamic languages, type checks are conducted during compile time making it more reliable.
+
+#### Concurrency
+
+Node.js uses one CPU thread and to make use of multi threaded platform you have to engage [clustering](https://nodejs.org/api/cluster.html).
+ASP.NET/IIS makes use of multiple threads out of the box with Thread Pool.  
+If you want to spawn new processes and engage concurrent processing then C# is a powerful language for it while in Node.js you have to resort to clustering with IPC again (and don't even ask about synchronization or atomics). Parallel execution in libraries like `co` and `async` are ["about kicking-off I/O tasks in parallel, not about parallel execution of code"](https://github.com/caolan/async#parallel).
+
+### Conclusion
+
+Definitely Node.js has its advantages over ASP.NET 4.5, that's why it has conquered such popularity. While ASP.NET 5 Beta is promising to catch up it is not production ready yet. All frameworks have its fortes and shortcomings to put up with -- it's a matter of preference which one to choose.  
+Here is a final table to help you pick the right direction.
+
+| Characterisitc     		| JS/Node.js  					| C#/ASP.NET 4.5 			| C#/ASP.NET 5 Beta
+| ----------------				|:------   							|:------- 						|:------- 
+| Languages		       		| JS looses 						| C# wins						| C# wins
+| Computational perf.	| --, limited concurrency	| Wins   						| Wins
+| IO performance	   		|  Wins								| --								| ?
+| Asynchronous programming | Required, awkward syntax	| Supported | Supported
+| Portability		     		| xP, Linux more reliable | Windows for recent | xP from the ground up
+| Reliability		     		| Not robust 						| Wins							| Not stable yet
+| Ecosystem		 	     	| Modern and wide (xP)	| Robust, NuGet			| Better (xP)
+| Learnability		   		| Easy to start, not mature| Mature, but abstract	| Less abstract  
+| Simplicity		     		| Simple, except Promises| 
 | Flexibility		     		| +	 	 | -  
 
+xP -- Cross Platform
 Flexibility -- how easy it is to tailor framework to your specific needs.
 
 ### Materials Used
