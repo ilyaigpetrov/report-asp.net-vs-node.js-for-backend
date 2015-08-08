@@ -9,9 +9,12 @@ We will compare ASP.NET and Node.js for backend programming.
 - [Processing Models](#processing-models)
 - [Programming Languages](#programming-languages)
 - [Support for Asynchronous Programming](#support-for-asynchronous-programming)
-- [Abstractions and Conventions](#abstractions-and-conventions)
+-- [Examples: if-else Flow for Authentication Middleware](#examples-if-else-flow-for-authentication-middleware)
+-- [Examples: Asynchronous Calls to HackerNews JSON API](#examples-asynchronous-calls-to-hackernews-json-api)
 - [Simplicity](#simplicity)
-- [Performance](#performance)
+-- Examples: Hello World
+- [Abstractions and Conventions](#abstractions-and-conventions) <small>(ASP.NET MVC 5)</small>
+- [Performance](#performance) <small>(ASP.NET MVC 4/Web API)</small>
 - [Reliability](#reliability)
 - [Learnability](#learnability)
 - [Ecosystem](#ecosystem)
@@ -28,7 +31,7 @@ In this report we will narrow down our comparison to:
 1. Support for asynchronous programming.
 2. Robustness of the languages.
 3. Simplicity of the code and deployment.
-4. We will often be comparing bleeding edge ASP.NET 5 Beta (vNext) and Node.js with `harmony` flag.  
+4. We will be comparing bleeding edge `ASP.NET 5 Beta` (vNext) and `Node.js` with `harmony` flag.  
 The reason for that is that Microsoft is striving to adopt strong sides of Node.js in their latest ASP.NET so it closely resembles and mimics Node.js.  
 ASP.NET 5 Beta is a striking competitor within .NET and asynchronous programming though it is not production ready yet.  
 The current stable ASP.NET 4.5 (or ASP.NET MVC 5) and Node.js are so different that it's hard to compare them but we will say a few words on it too.
@@ -123,7 +126,7 @@ Node.js is slightly different though:
 1. It compels you to write your code in asynchronous manner, so most libraries support asynchronous model.
 2. It implies fewer context switches as stated by some sources.
 
-#### Examples
+#### Examples: if-else Flow for Authentication Middleware
 
 Koa.js and `yield` asynchronous approach:
 
@@ -434,32 +437,6 @@ server.listen(port);
 console.log('Server running at http://localhost:'+port);
 ```
 
-### Abstractions and Conventions
-
-Node.js is "close to the metal". It offers fewer and thinner abstractions.  
-So you don't have to configure their overwhelming number of parameters, but instead you are faced with writing the code out of multitude small components.  
-This approach gives you flexibility of tailoring the code up to the solution.  
-It may be expected that in place of configuration the programmer is supposed to write much more boilerplate code.  
-It's not the case with Node.js as it offers all needed facilities from native or third party libraries at the same time not compelling you to use bloated abstractions.  
-Node.js programmer is free in choice of programming libraries, has a uniform way of combining them as middlewares, may easily divert from MVC in favor of any other architectural pattern and controls options that may be concealed by abstractions in other frameworks.  
-Node.js imposes only a few conventions: asynchronous programming, most servers and frameworks use middlewares (Express.js, Koa.js).
-
-Like Node.js ASP.NET 5 also proposes middlewares and low-level "close to the metal" control. 
-
-But on the other hand ASP.NET MVC 5 is quite different.  
-It offers abstractions but doesn't imply much configuration or boilerplate code.  
-Instead it leverages convection other configuration principle.  
-It means it has conventions which are when followed make your code concise and readable.  
-E.g. there is a predefined folder structure for every MVC project to follow, naming conventions for controllers, etc.  
-So, yes, ASP.NET imposes upon you its view of things. And if you want to divert from conventions then you are deprived of all this automatic out-of-the-box behavior and faced with manual configuration.  
-Now, the question is whether these conventions are good and apt for your tasks, will they make you happy with your task so you don't have to configure everything from scratch.
-
-Conclusion:
-- ASP.NET MVC exerts many conventions with which everything works out of the box, but tailoring code for your needs requires more configuration.
-- ASP.NET MVC offers many abstractions which may be great for large applications but seem bloated for simple tasks. Also programmer looses sense of control when everything is automated behind abstractions.
-- Node.js and ASP.NET 5 impose very few conventions but offer great flexibility.
-
-
 ### Simplicity
 
 To assess simplicity let's consider hello world examples of Node.js and ASP.NET vNext.  
@@ -516,7 +493,6 @@ All examples are taken from https://github.com/aspnet/home and _modified_ for co
 │   └── launchSettings.json
 ├── Startup.cs
 └── wwwroot
-    └── image.jpg
 ```
 The main file:
 ```csharp
@@ -548,17 +524,44 @@ dnu restore
 dnx . web
 ```
 
+### Abstractions and Conventions
+##### ASP.NET MVC 5 vs Node.js
+
+Node.js is "close to the metal". It offers fewer and thinner abstractions.  
+So you don't have to configure their overwhelming number of parameters, but instead you are faced with writing the code out of multitude small components.  
+This approach gives you flexibility of tailoring the code up to the solution.  
+It may be expected that in place of configuration the programmer is supposed to write much more boilerplate code.  
+It's not the case with Node.js as it offers all needed facilities from native or third party libraries at the same time not compelling you to use bloated abstractions.  
+Node.js programmer is free in choice of programming libraries, has a uniform way of combining them as middlewares, may easily divert from MVC in favor of any other architectural pattern and controls options that may be concealed by abstractions in other frameworks.  
+Node.js imposes only a few conventions: asynchronous programming, most servers and frameworks use middlewares (Express.js, Koa.js).
+
+Like Node.js ASP.NET 5 also proposes middlewares and low-level "close to the metal" control. 
+
+But on the other hand ASP.NET MVC 5 is quite different.  
+It offers abstractions but doesn't imply much configuration or boilerplate code.  
+Instead it leverages convection other configuration principle.  
+It means it has conventions which are when followed make your code concise and readable.  
+E.g. there is a predefined folder structure for every MVC project to follow, naming conventions for controllers, etc.  
+So, yes, ASP.NET imposes upon you its view of things. And if you want to divert from conventions then you are deprived of all this automatic out-of-the-box behavior and faced with manual configuration.  
+Now, the question is whether these conventions are good and apt for your tasks, will they make you happy with your task so you don't have to configure everything from scratch.
+
+Conclusion:
+- ASP.NET MVC exerts many conventions with which everything works out of the box, but tailoring code for your needs requires more configuration.
+- ASP.NET MVC offers many abstractions which may be great for large applications but seem bloated for simple tasks. Also programmer looses sense of control when everything is automated behind abstractions.
+- Node.js and ASP.NET 5 impose very few conventions but offer great flexibility.
+
 ### Performance
+##### ASP.NET MVC 4/Web API vs Node.js
 
 Certainly there are tasks where ASP.NET outperforms Node.js and there are tasks where ASP.NET looses.  
 To take advantage of multi core system Node.js must be clustered.  
 To outperform with IO-expensive tasks ASP.NET must use `async`/`await` keywords.  
 
-Here is a chart benchmarking ASP.NET Web API and Node.js in 2012, [source](http://mikaelkoskinen.net/post/asp-net-web-api-vs-node-js-benchmark-take-2).
+Here is a chart benchmarking ASP.NET Web API and Node.js for asynchronously reading POST body, 2012, [source](http://mikaelkoskinen.net/post/asp-net-web-api-vs-node-js-benchmark-take-2).
 
 ![ASP.NET Web API vs Node.js](http://adafyservicesstorage.blob.core.windows.net/mikael/image_76.png)
 
-Chart below compares performance of Node.js and ASP.NET MVC 4 in 2012, [source](http://rarcher.azurewebsites.net/Post/PostContent/19).
+Chart below compares performance of Node.js and ASP.NET MVC 4 for asynchronously reading json file from filesystem, 2012, [source](http://rarcher.azurewebsites.net/Post/PostContent/19).
 
 ![Node.js vs MVC 4](http://rarcher.azurewebsites.net/Images/nodeMvc30.png)
 
@@ -572,8 +575,8 @@ In cases where Node.js is not clustered it looses to ASP.NET, e.g. [see this](ht
 
 Except some issues Node.js works great on all major platforms.  
 ASP.NET is ported partially, e.g. MVC4 on Mono lacks support for async features.  
-The forthcoming MVC6 is expected to cover all major platforms.  
-Definitely, Node.js wins in portability.  
+The forthcoming ASP.NET 5 is expected to cover all major platforms.  
+Definitely, currently Node.js wins in portability.  
 Sources: [Mono Compatibility](http://www.mono-project.com/docs/about-mono/compatibility/).
 
 ### Reliability
@@ -597,24 +600,25 @@ As Node.js is more portable its community is wider. JavaScript is also more ubiq
 ### Conclusion
 
 Java outperforms C in overwhelming majority of aspects. But if you have to write high-performance code, e.g., system driver, or independent project then Java is no choice in favor of C.  
-The followig table summarizes comparison.
+The following table summarizes comparison.
 
 \+ means "wins"  
 \- means "looses"  
 
-| Characterisitc     | Node.js   | ASP.NET  
-| ----------------   |:------:   |:-------:  
-| IO Performance	   | +		 | -  
-| Computational Perf.| -		 | +  
+| Characterisitc     		| Node.js   | ASP.NET  
+| ----------------				|:------:   |:-------:  
+| IO Performance	   		| +		 | -  
+| Computational Perf.	| -		 | +  
 | Asynchronous Programming | required	 | possible  
-| Languages		       | JS looses | C# wins  
-| Portability		     | +		 | -  
-| Reliability		     | -		 | +  
-| Ecosystem		 	     | +		 | -  
-| Learnability		   | +	 	 | -  
-| Simplicity		     | +	 	 | -  
-| Flexibility		     | +	 	 | -  
+| Languages		       		| JS looses | C# wins  
+| Portability		     		| +		 | -  
+| Reliability		     		| -		 | +  
+| Ecosystem		 	     	| +		 | -  
+| Learnability		   		| +	 	 | -  
+| Simplicity		     		| +	 	 | -  
+| Flexibility		     		| +	 	 | -  
 
+Flexibility -- how easy it is to tailor framework to your specific needs.
 
 ### Materials Used
 [To Node.js Or Not To Node.js](http://www.haneycodes.net/to-node-js-or-not-to-node-js/)  
@@ -640,10 +644,10 @@ To quote Eilon Lipton:
 
 | Characterisitc     							| Node.js  	| ASP.NET
 | ----------------   								|:------:   	|:-------
-| SRP and SoC 									| +		 		| SOLID
-| Louse Coupling								| +		 		| DIP<br/>Dependence on Interfaces
+| SRP and SoC 									| Yes		 		| SOLID
+| Louse Coupling								| Yes		 		| DIP<br/>Dependence on Interfaces
 | Extensibility  									| Composition?				| Override of Classes<br/>Composition
-| Close to Metal 								| +		 		| --, abstract
+| Close to Metal 								| Yes		 		| No, abstract
 
 DIP -- Dependency Inversion Principle
 
