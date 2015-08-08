@@ -19,7 +19,7 @@ We will compare ASP.NET and Node.js for backend programming.
 - [Learnability](#learnability)
 - [Ecosystem](#ecosystem)
 - [Conclusion](#conclusion)
-- [Materials Used](#materials-used)
+- [Other Materials Used](#other-materials-used)
 
 ### Comparing Apples to Oranges
 
@@ -127,9 +127,7 @@ Node.js is slightly different though:
 1. It compels you to write your code in asynchronous manner, so most libraries support asynchronous model.
 2. It implies fewer context switches as stated by some sources.
 
-#### Examples: if-else Flow for Authentication Middleware
-
-Koa.js and `yield` asynchronous approach:
+##### `yield` Example, Koa.js, 
 
 ```javascript
 var koa = require('koa');
@@ -162,6 +160,7 @@ app.use(function *(){
 app.listen(3000);
 
 ```
+#### Examples: `if-else` Asynchronous Flow
 The following example demonstrates `if-else` control flow implemented in asynchronous manner.  
 The desired flow is the following:
 ```javascript
@@ -171,6 +170,7 @@ if( isAuthenticatedAsync() ) {
   return 'Failure, you are not authenticated.'
 }
 ```
+##### `if-else` Example, Express.js
 First approach, keep state in object passable between callbacks.  
 Example inspired by Express.js and Passport.js.  
 ```javascript
@@ -184,6 +184,8 @@ jsonRouter.route('/login')
     }
 ```
 `authenticateMiddleware` keeps its state somewhere in `req` object and checks it with `req.isAuthenticated` method.  
+
+##### `if-else` Example, Koa.js
 
 The same approach, but with Koa.js, the state is kept in `this` context object.
 ```javascript
@@ -265,9 +267,12 @@ GET https://hacker-news.firebaseio.com/v0/item/10023413.json
 }
 ```
 In these examples we will be retrieving top story title from HN API.  
+
+##### HN JSON API, ASP.NET 5 Beta
+
 Here is how it may be done in ASP.NET 5:
 ```csharp
-// Startup.cs, 54 lines
+// Startup.cs, ASP.NET 5 Beta, 54 lines
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Logging;
@@ -323,6 +328,9 @@ namespace HelloWeb
   }
 }
 ```
+
+##### HN JSON API, ASP.NET 4.5/Katana
+
 Now the same trick but with ASP.NET 4.5 and Katana.  
 Project structure:
 ```sh
@@ -337,9 +345,9 @@ Project structure:
 └── Web.config
 ```
 This time all development is done in the latest Visual Studio which runs `nuget restore`, builds project and deploys it on IIS.  
-The code:
+The code is almost the same:
 ```csharp
-// Startup.cs, 56 lines
+// Startup.cs, ASP.NET 4.5/Katana, 56 lines
 using Owin;
 using Microsoft.Owin.Logging;
 using System.Net.Http;
@@ -397,10 +405,11 @@ namespace HelloWorld
   }
 }
 ```
+##### HN JSON API, Bare Node.js
 
 Corresponding bare bone Node.js server script:
 ```javascript
-// server.js
+// server.js, bare Node.js
 var http = require('http');
 var https = require('https');
 
@@ -465,11 +474,13 @@ var port = 5001;
 server.listen(port);
 console.log('Server running at http://localhost:'+port);
 ```
+
+##### HN JSON API, Node.js/co@tj
 To get rid of [boilerplate code](https://en.wikipedia.org/wiki/Boilerplate_code) you can use either [request](https://github.com/request/request) or visionmedia [superagent](https://github.com/visionmedia/superagent).  
 To counter callback hell let's use `co@tj` library.  
 After all these corrections:
 ```javascript
-// server.js, 40 lines
+// server.js, Node.js and co@tj, 40 lines
 // To run: `node --harmony server.js`
 var http = require('http');
 
@@ -517,6 +528,16 @@ console.log('Server running at http://localhost:'+port);
 
 To assess simplicity let's consider hello world examples of Node.js, ASP.NET 5 Beta and ASP.NET 4.5 with Katana.  
 
+
+Commands used to run Node.js samples:
+```sh
+cd hello-nodejs
+npm install
+node server.js
+```
+
+##### HelloWorld, Express.js
+
 Node.js project file structure:
 ```sh
 .
@@ -536,7 +557,8 @@ app.get('/', function (req, res) {
 
 app.listen(3000); // Deploy a server on port 3000.
 ```
-Node.js, Koa.js
+##### HelloWorld, Koa.js
+
 ```javascript
 // server.js
 var koa = require('koa');
@@ -548,14 +570,10 @@ app.use(function *(){
 
 app.listen(3000); // Deploy a server on port 3000.
 ```
-Commands used to run samples:
-```sh
-cd hello-nodejs
-npm install
-node server.js
-```
 
-Now let's look at some corresponding examples for ASP.NET 5 Beta (vNext).  
+##### HelloWorld, ASP.NET 5 Beta
+
+Now let's look at some corresponding examples for ASP.NET 5 Beta.  
 
 All examples are taken from https://github.com/aspnet/home and _modified_ for comparison.
 
@@ -599,7 +617,8 @@ dnvm upgrade -u
 dnu restore
 dnx . web
 ```
-Finally let's dive into ASP.NET 4.5 with Katana.  
+##### HelloWorld, ASP.NET 4.5/Katana
+
 Project structure:
 ```sh
 .
@@ -637,10 +656,9 @@ namespace HelloWorld
   }
 }
 ```
-For more examples of ASP.NET 4.5 you may consider Web API 2 in `Code/hello-world-asp.net-web-api-2` folder.
+##### HelloWorld, ASP.NET 4.5 More Examples
 
-
-
+For more examples of ASP.NET 4.5 you may consider Web API 2 in `Code/hello-world-asp.net-web-api-2` folder. Developing for ASP.NET 4.5 is harder because you depend on Visual Studio/NuGet which don't always work perfectly (e.g., nuget may fail to resolve dependencies).
 
 ### Abstractions and Conventions
 ##### ASP.NET MVC 5 vs Node.js
@@ -655,17 +673,17 @@ Node.js imposes only a few conventions: asynchronous programming, most servers a
 
 Like Node.js ASP.NET 5 also proposes middlewares and low-level "close to the metal" control. 
 
-But on the other hand ASP.NET MVC 5 is quite different.  
-It offers abstractions but doesn't imply much configuration or boilerplate code.  
-Instead it leverages convection other configuration principle.  
+But on the other hand ASP.NET MVC 5 or Web API 2 (bot ASP.NET 4.5) are quite different.  
+They offers abstractions but don't imply much configuration or boilerplate code.  
+Instead they leverage convection other configuration principle.  
 It means it has conventions which are when followed make your code concise and readable.  
 E.g. there is a predefined folder structure for every MVC project to follow, naming conventions for controllers, etc.  
 So, yes, ASP.NET imposes upon you its view of things. And if you want to divert from conventions then you are deprived of all this automatic out-of-the-box behavior and faced with manual configuration.  
 Now, the question is whether these conventions are good and apt for your tasks, will they make you happy with your task so you don't have to configure everything from scratch.
 
 Conclusion:
-- ASP.NET MVC exerts many conventions with which everything works out of the box, but tailoring code for your needs requires more configuration.
-- ASP.NET MVC offers many abstractions which may be great for large applications but seem bloated for simple tasks. Also programmer looses sense of control when everything is automated behind abstractions.
+- ASP.NET MVC 5 exerts many conventions with which everything works out of the box, but tailoring code for your needs requires more configuration.
+- ASP.NET MVC 5 offers many abstractions which may be great for large applications but seem bloated for simple tasks. Also programmer looses sense of control when everything is automated behind abstractions.
 - Node.js and ASP.NET 5 impose very few conventions but offer great flexibility.
 
 ### Performance
@@ -711,8 +729,10 @@ As Node.js is more portable its community is wider. JavaScript is also more ubiq
 | OOP			| Prototype-based 	| Classical
 | Functional	| Third party libs	| Partly supported
 | Closures		| Yes				| Yes
-| Lambdas		| Yes, [syntax support](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions) in ES6				| Yes, syntax support
+| Lambdas		| Yes, [syntax support][syn] in ES6	| Yes, syntax support
 | Concurrent	| No, clustered, IPC	| Yes
+
+[syn]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions
 
 #### Cost
 
@@ -724,11 +744,12 @@ As Node.js is more portable its community is wider. JavaScript is also more ubiq
 | Competent developers		| Available				| Catches up, also see [1]
 | Code maintenance			| more bugs, upgrades	| less bugs, upgrades
 
+[f]: https://en.wikipedia.org/wiki/Freemium
+
 My choice may be highly subjective but I believe Node.js is cheaper in general.
 
 > [[1]](http://www.haneycodes.net/to-node-js-or-not-to-node-js/) 2014: Relative to .NET, there aren’t as many Node.js developers in the current tech scene that are capable and competent.
 
-[f]: https://en.wikipedia.org/wiki/Freemium
 
 #### Readability
 
@@ -774,7 +795,7 @@ Currently Node.js ecosystem is being split between callback and generator approa
 #### Portability
 
 Except some issues Node.js works great on all major platforms.  
-ASP.NET is ported partially, e.g. MVC4 on Mono lacks support for async features.  
+ASP.NET is ported partially, e.g. MVC 4 on Mono lacks support for async features.  
 The forthcoming ASP.NET 5 is expected to cover all major platforms.  
 Definitely, currently Node.js wins in portability.  
 Sources: [Mono Compatibility](http://www.mono-project.com/docs/about-mono/compatibility/).
@@ -825,23 +846,27 @@ If you want to spawn new processes and engage concurrent processing then C# is a
 Definitely Node.js has its advantages over ASP.NET 4.5, that's why it has conquered such popularity. While ASP.NET 5 Beta is promising to catch up it is not production ready yet. All frameworks have its fortes and shortcomings to put up with -- it's a matter of preference which one to choose.  
 Here is a final table to help you pick the right direction.
 
+Flexibility -- how easy it is to tailor framework to your specific needs.
+xP -- Cross Platform
+
 | Characterisitc     		| JS/Node.js  					| C#/ASP.NET 4.5 			| C#/ASP.NET 5 Beta
 | ----------------				|:------   							|:------- 						|:------- 
 | Languages		       		| JS looses 						| C# wins						| C# wins
+| Paradigms					| --									| Rich							| Rich
 | Computational perf.	| --, limited concurrency	| Wins   						| Wins
 | IO performance	   		|  Wins								| --								| ?
 | Asynchronous programming | Required, awkward syntax	| Supported | Supported
 | Portability		     		| xP, Linux more reliable | Windows for recent | xP from the ground up
+| Dependability		    | Not much, xP 				| On Win and VS			| xP
 | Reliability		     		| Not robust 						| Wins							| Not stable yet
-| Ecosystem		 	     	| Modern and wide (xP)	| Robust, NuGet			| Better (xP)
+| Ecosystem		 	     	| Modern and wide (xP)	| Robust, NuGet may fail | Better (xP)
 | Learnability		   		| Easy to start, not mature| Mature, but abstract	| Less abstract  
-| Simplicity		     		| Simple, except Promises| 
-| Flexibility		     		| +	 	 | -  
+| Cost		   					| Wins, free 						| [Freemium][f]	, Win, VS | Free/Paid, more xP tools 
+| Simplicity		     		| Simple, except Promises| Server deployment, NuGet | Wins
+| Flexibility		     		| Wins 	 							| MVC, Web API are hard to tailor | MVC not tested
 
-xP -- Cross Platform
-Flexibility -- how easy it is to tailor framework to your specific needs.
 
-### Materials Used
+### Other Materials Used
 [To Node.js Or Not To Node.js](http://www.haneycodes.net/to-node-js-or-not-to-node-js/)  
 [Is Node.js better than ASP.NET?](https://thomasbandt.com/is-nodejs-better-than-aspnet)  
 [The Node.js Philosophy](http://blog.nodejitsu.com/the-nodejs-philosophy/)
@@ -855,8 +880,6 @@ The End
 
 ### Principles behind Node.js and C#/ASP.NET/ASP.NET MVC
 
-TO BE DONE: This chapter is just a draft, don't take it seriously.
-
 ASP.NET MVC embraces Single Responsibility Principle and I'm pretty sure it embraces the whole [SOLID](https://en.wikipedia.org/wiki/SOLID) set of principles of OOP.  
 
 To quote Eilon Lipton:
@@ -864,11 +887,11 @@ To quote Eilon Lipton:
 
 
 | Characterisitc     							| Node.js  	| ASP.NET
-| ----------------   								|:------:   	|:-------
+| ----------------   								|:------   	|:-------
 | SRP and SoC 									| Yes		 		| SOLID
 | Louse Coupling								| Yes		 		| DIP<br/>Dependence on Interfaces
-| Extensibility  									| Composition?				| Override of Classes<br/>Composition
-| Close to Metal 								| Yes		 		| No, abstract
+| Extensibility  									| Composition, Middlewares				| Override of Classes<br/>Composition
+| Close to Metal 								| Yes		 		| No, mostly abstract
 
 DIP -- Dependency Inversion Principle
 
