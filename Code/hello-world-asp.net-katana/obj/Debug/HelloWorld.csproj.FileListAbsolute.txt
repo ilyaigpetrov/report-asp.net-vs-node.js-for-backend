@@ -1,0 +1,11 @@
+F:\__Storage__\Services' Data\github.com\report-asp.net-vs-node.js-for-backend\Code\hello-world-asp.net-katana\bin\HelloWorld.dll.config
+F:\__Storage__\Services' Data\github.com\report-asp.net-vs-node.js-for-backend\Code\hello-world-asp.net-katana\bin\HelloWorld.dll
+F:\__Storage__\Services' Data\github.com\report-asp.net-vs-node.js-for-backend\Code\hello-world-asp.net-katana\bin\HelloWorld.pdb
+F:\__Storage__\Services' Data\github.com\report-asp.net-vs-node.js-for-backend\Code\hello-world-asp.net-katana\bin\Microsoft.Owin.dll
+F:\__Storage__\Services' Data\github.com\report-asp.net-vs-node.js-for-backend\Code\hello-world-asp.net-katana\bin\Microsoft.Owin.Host.SystemWeb.dll
+F:\__Storage__\Services' Data\github.com\report-asp.net-vs-node.js-for-backend\Code\hello-world-asp.net-katana\bin\Owin.dll
+F:\__Storage__\Services' Data\github.com\report-asp.net-vs-node.js-for-backend\Code\hello-world-asp.net-katana\bin\Microsoft.Owin.xml
+F:\__Storage__\Services' Data\github.com\report-asp.net-vs-node.js-for-backend\Code\hello-world-asp.net-katana\bin\Microsoft.Owin.Host.SystemWeb.xml
+F:\__Storage__\Services' Data\github.com\report-asp.net-vs-node.js-for-backend\Code\hello-world-asp.net-katana\obj\Debug\HelloWorld.csprojResolveAssemblyReference.cache
+F:\__Storage__\Services' Data\github.com\report-asp.net-vs-node.js-for-backend\Code\hello-world-asp.net-katana\obj\Debug\HelloWorld.dll
+F:\__Storage__\Services' Data\github.com\report-asp.net-vs-node.js-for-backend\Code\hello-world-asp.net-katana\obj\Debug\HelloWorld.pdb
